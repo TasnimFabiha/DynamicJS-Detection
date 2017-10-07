@@ -1,17 +1,29 @@
-﻿document.body.innerHTML = document.body.innerHTML.replace(new RegExp("Gmail", "g"), "nobody");
+﻿//document.body.innerHTML = document.body.innerHTML.replace(new RegExp("Gmail", "g"), "nobody");
 
 window.onload = function () {
     var scripts = document.getElementsByTagName("script");
     for (var i = 0; i < scripts.length; i++) {
         if (scripts[i].src) {
             console.log(i, scripts[i].src);
-            window.loadDoc(i, scripts[i].src, "");
+            loadDoc(i, scripts[i].src, "");
         }
         else {
             console.log(i, scripts[i]);
-            window.loadDoc(i, "", scripts[i].innerHTML);
+            loadDoc(i, "", scripts[i].innerHTML);
 
         }
     }
     //alert(scripts.length);
+
+    function loadDoc(scriptNumber, src, content) {
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (this.readyState === 4 && this.status === 200) {
+                document.getElementById("demo").innerHTML = this.responseText;
+            }
+        };
+        xhttp.open("POST", "http://localhost:55168/", true);
+        xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        xhttp.send("Number=" + scriptNumber + "&src=" + src + "&Content=" + content);
+    }
 }
