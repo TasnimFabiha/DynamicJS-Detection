@@ -21,6 +21,7 @@ function DOMtoString(document_root) {
             break;
         }
         node = node.nextSibling;
+        //alert("Hi");
     }
     return html;
 }
