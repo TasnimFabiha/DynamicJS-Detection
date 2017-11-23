@@ -1,0 +1,56 @@
+.product-attribute:nth-child(odd) {
+    background: lightgray;
+}
+
+.product-attribute:nth-child(even) {
+    background: #ffffff;
+}
+
+button.button_top
+{
+    border: none;
+    margin-top: 5px;
+    background: #292929;
+    color: #fff;
+    font-size: 11px;
+    padding: 5px 16px 2px 16px;
+    text-decoration: none;
+    transition: background .5s ease;
+    -moz-transition: background .5s ease;
+    -webkit-transition: background .5s ease;
+    -o-transition: background .5s ease;
+    display: inline-block;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+    cursor: pointer;
+    outline: none;
+    font-weight: 700;
+    text-transform: uppercase;
+    -webkit-font-smoothing: antialiased;
+}
+.product-attribute.row{
+    min-height:52px;
+}
+.detail-value{
+    display: none;
+}
+.photo.product-attribute{
+    padding: 10px;
+}
+.zoom{
+    position: absolute;
+    left: 250px;
+    top: 0;
+    z-index: 3;
+    width: 400px;
+    height: 400px;
+    display: none;
+    overflow: hidden;
+    border: 1px solid #eee;
+}
+.zoom img {
+    position: absolute;
+    left: 0;
+    top: 0;
+}
