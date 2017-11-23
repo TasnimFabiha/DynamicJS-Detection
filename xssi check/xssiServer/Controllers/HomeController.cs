@@ -22,18 +22,16 @@ namespace xssiServer.Controllers
             //request.CookieContainer = new CookieContainer();
 
             //HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-            Uri target = new Uri("http://www.foodiez.com.bd/");
+            Uri target = new Uri("http://localhost/demo/userInformationView.php");
 
-            Cookies.Add(new Cookie("ASP.NET_SessionId", "wvlswgtgmf2ylobjn2kwap4v") { Domain = target.Host });
-            Cookies.Add(new Cookie("_ga", "GA1.3.1782506910.1507891453") { Domain = target.Host });
-            Cookies.Add(new Cookie("_gat", "1") { Domain = target.Host });
-            Cookies.Add(new Cookie("_gid", "GA1.3.803010448.1508076781") { Domain = target.Host });
-            Cookies.Add(new Cookie("DhakaFoodiesAuthCookie", "39E4E05A351EC4D68794E92E5700A7079E6BD5FC41E44BAA8F36B746F6C6F797F79931C95C5F5EE4AAFCF31B3196D311BFE2636BB2E783D796BEFB0E1CC9AB239E738866F2A66A2ACA8AED7104BACA268B3E6B9890DB81BBCD7EAA5BF095E724BDFD3B5FAC6BA816998FB9C1F71C10B4CF6FB670") { Domain = target.Host });
-
-
+            Cookies.Add(new Cookie("__RequestVerificationToken", "05QKJgFJ8ZGk6KmgD1QR6RjeW1sHUwx5JGERq2NTUW0GXp7Hbu1Cs2cgQmkZ3-QFvynb876pKezKp-CvIoZmYF-8p28365lcvUK0be4eMf81") { Domain = target.Host });
+            Cookies.Add(new Cookie("io", "rVBILLp7745vDsrDAAAA") { Domain = target.Host });
+            Cookies.Add(new Cookie("PHPSESSID", "ktt4a4eue8cpq60evul997dia1") { Domain = target.Host });
+           
+            
             //cookies.Add(response.Cookies);
 
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://www.foodiez.com.bd/Home/GetCityFromSession");
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://localhost/demo/userInformationView.php");
             request.CookieContainer = Cookies;
             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
 
@@ -66,7 +64,9 @@ namespace xssiServer.Controllers
                     {
                         ContentWithLogin = withLoginContent,
                         ContentWithOutLogin = withoutLoginContent,
-                        IsDynamic = isDynamicContent
+                        IsDynamic = isDynamicContent,
+                        Source = s.Source,
+                        Number = s.Number
 
                 });
                 }

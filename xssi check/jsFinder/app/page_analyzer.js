@@ -5,6 +5,7 @@ window.onload = function () {
     for (var i = 0; i < scripts.length; i++) { 
         if (scripts[i].src) {
             console.log(i, scripts[i].src);
+            
             loadDoc(i, scripts[i].src, "");
         }
         else {
@@ -16,6 +17,9 @@ window.onload = function () {
     //getScriptContent();
     //alert(scripts.length);
 }
+
+
+
 
 function loadDoc(scriptNumber, src, content) {
     var xhttp = new XMLHttpRequest();
