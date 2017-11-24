@@ -33,7 +33,12 @@
 
 
 <script src="js/myApp.php"></script>
-
+<?php 
+    $userName = $_SESSION['username'];
+?>
+<script type="text/javascript">
+    var usermane = "<?php echo $userName ?>"
+</script>
 <!-- OTHER JS -->
 <script src="js/superfish.js"></script>
 <script src="js/bootstrap.min.js"></script>
