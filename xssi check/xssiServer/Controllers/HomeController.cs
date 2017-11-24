@@ -27,8 +27,8 @@ namespace xssiServer.Controllers
             Cookies.Add(new Cookie("__RequestVerificationToken", "05QKJgFJ8ZGk6KmgD1QR6RjeW1sHUwx5JGERq2NTUW0GXp7Hbu1Cs2cgQmkZ3-QFvynb876pKezKp-CvIoZmYF-8p28365lcvUK0be4eMf81") { Domain = target.Host });
             Cookies.Add(new Cookie("io", "rVBILLp7745vDsrDAAAA") { Domain = target.Host });
             Cookies.Add(new Cookie("PHPSESSID", "ktt4a4eue8cpq60evul997dia1") { Domain = target.Host });
-           
-            
+
+
             //cookies.Add(response.Cookies);
 
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://localhost/demo/userInformationView.php");
@@ -42,6 +42,16 @@ namespace xssiServer.Controllers
             return Json(strResponse, JsonRequestBehavior.AllowGet);
         }
 
+        public CookieContainer GetCookie()
+        {
+            CookieContainer cookies = new CookieContainer();
+            Uri target = new Uri("http://localhost/demo/userInformationView.php");
+            cookies.Add(new Cookie("__RequestVerificationToken", "05QKJgFJ8ZGk6KmgD1QR6RjeW1sHUwx5JGERq2NTUW0GXp7Hbu1Cs2cgQmkZ3-QFvynb876pKezKp-CvIoZmYF-8p28365lcvUK0be4eMf81") { Domain = target.Host });
+            cookies.Add(new Cookie("io", "rVBILLp7745vDsrDAAAA") { Domain = target.Host });
+            cookies.Add(new Cookie("PHPSESSID", "ktt4a4eue8cpq60evul997dia1") { Domain = target.Host });
+            return cookies;
+        }
+
         public ActionResult Index()
         {
 
@@ -51,14 +61,30 @@ namespace xssiServer.Controllers
 
         public ActionResult GetScriptContent()
         {
-
+            var cookies = GetCookie();
             var scripts = Db.GenericScriptHolders.ToList();
             foreach (var s in scripts)
             {
-                if (s.Source != null && !s.Source.Contains("facebook"))
+                if (s.Content != null)
                 {
                     var withoutLoginContent = ExecuteHttpGet(s.Source);
-                    var withLoginContent = ExecuteHttpGet(s.Source, Cookies);
+
+                    if (!withoutLoginContent.Contains(s.Content))
+                    {
+                        Db.ScriptHolders.Add(new ScriptHolder
+                        {
+                            ContentWithLogin = s.Content,
+                            ContentWithOutLogin = "",
+                            IsDynamic = true,
+                            Source = s.Source,
+                            Number = s.Number
+                        });
+                    }
+                }
+                if (s.Source != null && !s.Source.Contains("facebook") && s.Content == null)
+                {
+                    var withoutLoginContent = ExecuteHttpGet(s.Source);
+                    var withLoginContent = ExecuteHttpGet(s.Source, cookies);
                     var isDynamicContent = IsDynamic(withLoginContent, withoutLoginContent);
                     Db.ScriptHolders.Add(new ScriptHolder
                     {
@@ -67,35 +93,18 @@ namespace xssiServer.Controllers
                         IsDynamic = isDynamicContent,
                         Source = s.Source,
                         Number = s.Number
-
-                });
+                    });
                 }
                 Db.SaveChanges();
             }
             return null;
         }
 
-        /*public void GetScriptContentStatic(CookieContainer cookies = null)
-        {
-            var source = "http://www.foodiez.com.bd";
-            var withLogin = ExecuteHttpGet(source, cookies);
-            var withoutLogin = ExecuteHttpGet(source);
-            Debug.WriteLine("");
-            Debug.WriteLine("");
-            Debug.WriteLine("");
-            Debug.WriteLine("");
-            Debug.WriteLine(withoutLogin);
-            Debug.WriteLine(withLogin);
 
-            Debug.WriteLine("");
-            Debug.WriteLine("");
-            Debug.WriteLine("");
-            Debug.WriteLine("");
-        }*/
 
         public bool IsDynamic(string withLogin, string withoutLogin)
         {
-            
+
             //var scrptingEngine = new Jint.Engine();
             /*var s = scrptingEngine.Execute(withLogin);
             Debug.WriteLine(s);*/
@@ -103,7 +112,7 @@ namespace xssiServer.Controllers
             var parsewithoutLogin = scrptingEngine.Execute(withoutLogin);*/
 
             //var result = !parsewithLogin.Equals(parsewithoutLogin);
-                //!scrptingEngine.Execute(withLogin).Equals(scrptingEngine.Execute(withoutLogin));
+            //!scrptingEngine.Execute(withLogin).Equals(scrptingEngine.Execute(withoutLogin));
             var result = !withLogin.Equals(withoutLogin);
             Debug.WriteLine(result);
             return result;

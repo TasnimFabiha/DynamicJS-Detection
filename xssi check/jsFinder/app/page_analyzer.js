@@ -10,7 +10,7 @@ window.onload = function () {
         }
         else {
             console.log(i, scripts[i]);
-            loadDoc(i, "", scripts[i].innerHTML);
+            loadDoc(i, window.location.href, scripts[i].innerHTML);
         }
     }
 
