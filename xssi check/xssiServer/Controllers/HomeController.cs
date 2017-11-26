@@ -15,8 +15,8 @@ namespace xssiServer.Controllers
     {
 
         ApplicationDbContext Db = new ApplicationDbContext();
-        CookieContainer Cookies = new CookieContainer();
-        public ActionResult ReqWithCookies()
+        //public CookieContainer Cookies = new CookieContainer();
+        /*public ActionResult ReqWithCookies()
         {
             //HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://www.foodiez.com.bd/Home/GetCityFromSession");
             //request.CookieContainer = new CookieContainer();
@@ -29,7 +29,7 @@ namespace xssiServer.Controllers
             Cookies.Add(new Cookie("PHPSESSID", "ktt4a4eue8cpq60evul997dia1") { Domain = target.Host });
 
 
-            //cookies.Add(response.Cookies);
+            //Cookies.Add(response.Cookies);
 
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://localhost/demo/userInformationView.php");
             request.CookieContainer = Cookies;
@@ -40,17 +40,9 @@ namespace xssiServer.Controllers
             string strResponse = reader.ReadToEnd();
 
             return Json(strResponse, JsonRequestBehavior.AllowGet);
-        }
+        }*/
 
-        public CookieContainer GetCookie()
-        {
-            CookieContainer cookies = new CookieContainer();
-            Uri target = new Uri("http://localhost/demo/userInformationView.php");
-            cookies.Add(new Cookie("__RequestVerificationToken", "05QKJgFJ8ZGk6KmgD1QR6RjeW1sHUwx5JGERq2NTUW0GXp7Hbu1Cs2cgQmkZ3-QFvynb876pKezKp-CvIoZmYF-8p28365lcvUK0be4eMf81") { Domain = target.Host });
-            cookies.Add(new Cookie("io", "rVBILLp7745vDsrDAAAA") { Domain = target.Host });
-            cookies.Add(new Cookie("PHPSESSID", "ktt4a4eue8cpq60evul997dia1") { Domain = target.Host });
-            return cookies;
-        }
+      
 
         public ActionResult Index()
         {
@@ -81,7 +73,7 @@ namespace xssiServer.Controllers
                         });
                     }
                 }
-                if (s.Source != null && !s.Source.Contains("facebook") && s.Content == null)
+                if (s.Source != null && s.Content == null)
                 {
                     var withoutLoginContent = ExecuteHttpGet(s.Source);
                     var withLoginContent = ExecuteHttpGet(s.Source, cookies);
@@ -158,7 +150,40 @@ namespace xssiServer.Controllers
             return View();
         }
 
+
+        public string Cookies, TargetUrl;
         [HttpPost]
+        public ActionResult PostCookies(string cookies, string url)
+        {
+            Cookies = cookies;
+            TargetUrl = url;
+            
+            
+            return null;
+        }
+
+        public CookieContainer GetCookie()
+        {
+
+            Uri target = new Uri(TargetUrl);
+            var createdCookies = new CookieContainer();
+            
+            var splitWithSemicolon = Cookies.Split(';');
+            foreach (var splitted in splitWithSemicolon)
+            {
+                var cookieValue = splitted.Split('=');
+                createdCookies.Add(new Cookie(cookieValue[0].Trim(), cookieValue[1].Trim())
+                {
+                    Domain = target.Host
+                });
+            }
+            return createdCookies;
+        }
+
+
+
+
+[HttpPost]
         public ActionResult PostScript(GenericScriptHolder genericScriptHolder)
         {
             ViewBag.Message = "Your contact page.";

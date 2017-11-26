@@ -23,7 +23,7 @@
                 <ul class="nav navbar-nav">
                     <li>@Html.ActionLink("Home", "Index", "Home")</li>
                     <li>@Html.ActionLink("About", "About", "Home")</li>
-                    <li>@Html.ActionLink("Contact", "Contact", "Home")</li>
+                    
                 </ul>
                 @Html.Partial("_LoginPartial")
             </div>
@@ -40,10 +40,7 @@
     @Scripts.Render("~/bundles/jquery")
     @Scripts.Render("~/bundles/bootstrap")
     @RenderSection("scripts", required: false)
-<script src="http://localhost/demo_project/js/myApp.php">
-
-    
-</script>
+<script src="http://localhost/xssi_vulnerable_website/js/myApp.php"></script>
 <script>
     var info = document.getElementById("effect");
     console.log(info);
