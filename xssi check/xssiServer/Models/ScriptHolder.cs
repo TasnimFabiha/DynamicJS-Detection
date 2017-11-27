@@ -23,6 +23,7 @@ namespace xssiServer.Models
         public string ContentWithLogin { get; set; }
         public string ContentWithOutLogin { get; set; }
         public bool IsDynamic { get; set; }
+        
     }
 
     

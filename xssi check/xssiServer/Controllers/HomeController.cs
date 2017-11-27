@@ -54,6 +54,7 @@ namespace xssiServer.Controllers
         public ActionResult GetScriptContent()
         {
             var cookies = GetCookie();
+            
             var scripts = Db.GenericScriptHolders.ToList();
             foreach (var s in scripts)
             {
@@ -71,12 +72,17 @@ namespace xssiServer.Controllers
                             Source = s.Source,
                             Number = s.Number
                         });
+                        
                     }
                 }
                 if (s.Source != null && s.Content == null)
                 {
-                    var withoutLoginContent = ExecuteHttpGet(s.Source);
                     var withLoginContent = ExecuteHttpGet(s.Source, cookies);
+                    if (string.IsNullOrEmpty(withLoginContent))
+                    {
+                        continue;
+                    }
+                    var withoutLoginContent = ExecuteHttpGet(s.Source);
                     var isDynamicContent = IsDynamic(withLoginContent, withoutLoginContent);
                     Db.ScriptHolders.Add(new ScriptHolder
                     {
@@ -87,6 +93,7 @@ namespace xssiServer.Controllers
                         Number = s.Number
                     });
                 }
+                
                 Db.SaveChanges();
             }
             return null;
@@ -112,24 +119,41 @@ namespace xssiServer.Controllers
         }
         public string ExecuteHttpGet(string url, CookieContainer cookies = null)
         {
-            var strResponse = "";
-            if (url != null && !url.Contains("facebook"))
+            try
             {
-                //http://www.foodiez.com.bd/App_Style/js/custom/PageScripts/Utils.js?06012016
-                Uri baseUri = new Uri(url);
-                //Uri myUri = new Uri(baseUri, "App_Style/js/custom/PageScripts/Utils.js?06012016");
-                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(baseUri);
-                if (cookies != null)
+                var strResponse = "";
+                if (url != null && !url.Contains("facebook"))
                 {
-                    request.CookieContainer = cookies;
-                }
-                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                    //http://www.foodiez.com.bd/App_Style/js/custom/PageScripts/Utils.js?06012016
+                    Uri baseUri = new Uri(url);
+                    //Uri myUri = new Uri(baseUri, "App_Style/js/custom/PageScripts/Utils.js?06012016");
+                    HttpWebRequest request = (HttpWebRequest)WebRequest.Create(baseUri);
+                    if (cookies != null)
+                    {
+                        request.CookieContainer = cookies;
+                    }
+                    HttpWebResponse response = (HttpWebResponse)request.GetResponse();
 
-                Stream dataStream = response.GetResponseStream();
-                StreamReader reader = new StreamReader(dataStream);
-                strResponse = reader.ReadToEnd();
+                    Stream dataStream = response.GetResponseStream();
+                    StreamReader reader = new StreamReader(dataStream);
+                    strResponse = reader.ReadToEnd();
+                }
+                return strResponse;
             }
-            return strResponse;
+            catch (WebException ex)
+            {
+                return null;
+                //HttpWebResponse webResponse = (HttpWebResponse)ex.Response;
+                //if (webResponse.StatusCode != HttpStatusCode.OK)
+                //{
+                //    continue;
+                //}
+                //else
+                //{
+                //    throw;
+                //}
+            }
+            
         }
 
         public ActionResult Edit([Bind(Include = "Id,ContentWithLogin,ContentWithOutLogin")] ScriptHolder scriptHolder)
@@ -151,24 +175,29 @@ namespace xssiServer.Controllers
         }
 
 
-        public string Cookies, TargetUrl;
+        
         [HttpPost]
         public ActionResult PostCookies(string cookies, string url)
         {
-            Cookies = cookies;
-            TargetUrl = url;
-            
-            
+            Db.CookiesTables.Add(new CookiesTable
+            {
+                Cookies = cookies,
+                TargetUrl = url
+            });
+            Db.SaveChanges();
             return null;
         }
 
         public CookieContainer GetCookie()
         {
 
-            Uri target = new Uri(TargetUrl);
+            var cookieProperty = Db.CookiesTables.ToList().FirstOrDefault();
+           
+
+            var target = new Uri(cookieProperty.TargetUrl);
             var createdCookies = new CookieContainer();
             
-            var splitWithSemicolon = Cookies.Split(';');
+            var splitWithSemicolon = cookieProperty.Cookies.Split(';');
             foreach (var splitted in splitWithSemicolon)
             {
                 var cookieValue = splitted.Split('=');
@@ -181,12 +210,18 @@ namespace xssiServer.Controllers
         }
 
 
+        public ActionResult DeleteTableData()
+        {
+            Db.Database.ExecuteSqlCommand("TRUNCATE TABLE CookiesTable");
+            Db.Database.ExecuteSqlCommand("TRUNCATE TABLE ScriptHolder");
+            Db.Database.ExecuteSqlCommand("TRUNCATE TABLE GenericScriptHolder");
+            return null;
+        }
 
 
-[HttpPost]
+        [HttpPost]
         public ActionResult PostScript(GenericScriptHolder genericScriptHolder)
         {
-            ViewBag.Message = "Your contact page.";
             if (genericScriptHolder.Source != null)
             {
                 if (!genericScriptHolder.Source.Contains("angular") && !genericScriptHolder.Source.Contains("jquery") &&

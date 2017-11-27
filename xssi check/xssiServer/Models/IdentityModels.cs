@@ -32,5 +32,6 @@ namespace xssiServer.Models
 
         public DbSet<ScriptHolder> ScriptHolders { get; set; } 
         public DbSet<GenericScriptHolder> GenericScriptHolders { get; set; } 
+        public DbSet<CookiesTable> CookiesTables { get; set; } 
     }
 }
