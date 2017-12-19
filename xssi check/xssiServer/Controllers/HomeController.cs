@@ -42,7 +42,7 @@ namespace xssiServer.Controllers
             return Json(strResponse, JsonRequestBehavior.AllowGet);
         }*/
 
-      
+
 
         public ActionResult Index()
         {
@@ -54,7 +54,7 @@ namespace xssiServer.Controllers
         public ActionResult GetScriptContent()
         {
             var cookies = GetCookie();
-            
+
             var scripts = Db.GenericScriptHolders.ToList();
             foreach (var s in scripts)
             {
@@ -72,7 +72,7 @@ namespace xssiServer.Controllers
                             Source = s.Source,
                             Number = s.Number
                         });
-                        
+
                     }
                 }
                 if (s.Source != null && s.Content == null)
@@ -93,10 +93,29 @@ namespace xssiServer.Controllers
                         Number = s.Number
                     });
                 }
-                
+
                 Db.SaveChanges();
             }
-            return null;
+
+            var genericScripts = Db.ScriptHolders.Count();
+            var dynamic = Db.ScriptHolders.Where(s => s.IsDynamic).ToList();
+            var dynamicCount = dynamic.Count();
+            using (var file = new StreamWriter(@"C:\Users\Public\dynamic.txt"))
+            {
+                var count = 0;
+                foreach (var line in dynamic)
+                {
+                    count++;
+                    file.WriteLine(count);
+                    file.WriteLine(line.ContentWithLogin);
+                    file.WriteLine();
+                    file.WriteLine();
+                }
+            }
+            var notdynamic = Db.ScriptHolders.Count(s => !s.IsDynamic);
+
+
+            return Json(new { genericScripts, dynamicCount, notdynamic});
         }
 
 
@@ -153,7 +172,7 @@ namespace xssiServer.Controllers
                 //    throw;
                 //}
             }
-            
+
         }
 
         public ActionResult Edit([Bind(Include = "Id,ContentWithLogin,ContentWithOutLogin")] ScriptHolder scriptHolder)
@@ -175,7 +194,7 @@ namespace xssiServer.Controllers
         }
 
 
-        
+
         [HttpPost]
         public ActionResult PostCookies(string cookies, string url)
         {
@@ -192,19 +211,23 @@ namespace xssiServer.Controllers
         {
 
             var cookieProperty = Db.CookiesTables.ToList().FirstOrDefault();
-           
+
 
             var target = new Uri(cookieProperty.TargetUrl);
             var createdCookies = new CookieContainer();
-            
+
             var splitWithSemicolon = cookieProperty.Cookies.Split(';');
             foreach (var splitted in splitWithSemicolon)
             {
                 var cookieValue = splitted.Split('=');
-                createdCookies.Add(new Cookie(cookieValue[0].Trim(), cookieValue[1].Trim())
+                if (cookieValue.Length > 1)
                 {
-                    Domain = target.Host
-                });
+                    createdCookies.Add(new Cookie(cookieValue[0].Trim(), Server.UrlEncode(cookieValue[1].Trim()))
+                    {
+                        Domain = target.Host
+                    });
+                }
+
             }
             return createdCookies;
         }
