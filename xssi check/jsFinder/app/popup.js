@@ -1,134 +1,163 @@
-/*
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 /**
- * Global variable containing the query we'd like to pass to Flickr. In this
- * case, kittens!
+ * Get the current URL.
  *
- * @type {string}
- #1#
-var QUERY = 'kittens';
+ * @param {function(string)} callback called when the URL of the current tab
+ *   is found.
+ */
+function getCurrentTabUrl(callback) {
+    // Query filter to be passed to chrome.tabs.query - see
+    // https://developer.chrome.com/extensions/tabs#method-query
+    var queryInfo = {
+        active: true,
+        currentWindow: true
+    };
 
-var kittenGenerator = {
-  /**
-   * Flickr URL that will give us lots and lots of whatever we're looking for.
-   *
-   * See http://www.flickr.com/services/api/flickr.photos.search.html for
-   * details about the construction of this URL.
-   *
-   * @type {string}
-   * @private
-   #1#
-  searchOnFlickr_: 'https://secure.flickr.com/services/rest/?' +
-      'method=flickr.photos.search&' +
-      'api_key=90485e931f687a9b9c2a66bf58a3861a&' +
-      'text=' + encodeURIComponent(QUERY) + '&' +
-      'safe_search=1&' +
-      'content_type=1&' +
-      'sort=interestingness-desc&' +
-      'per_page=20',
+    chrome.tabs.query(queryInfo, function (tabs) {
+        // chrome.tabs.query invokes the callback with a list of tabs that match the
+        // query. When the popup is opened, there is certainly a window and at least
+        // one tab, so we can safely assume that |tabs| is a non-empty array.
+        // A window can only have one active tab at a time, so the array consists of
+        // exactly one tab.
+        var tab = tabs[0];
 
-  /**
-   * Sends an XHR GET request to grab photos of lots and lots of kittens. The
-   * XHR's 'onload' event is hooks up to the 'showPhotos_' method.
-   *
-   * @public
-   #1#
-  requestKittens: function() {
-    var req = new XMLHttpRequest();
-    req.open("GET", this.searchOnFlickr_, true);
-    req.onload = this.showPhotos_.bind(this);
-    req.send(null);
-  },
+        // A tab is a plain object that provides information about the tab.
+        // See https://developer.chrome.com/extensions/tabs#type-Tab
+        var url = tab.url;
 
-  /**
-   * Handle the 'onload' event of our kitten XHR request, generated in
-   * 'requestKittens', by generating 'img' elements, and stuffing them into
-   * the document for display.
-   *
-   * @param {ProgressEvent} e The XHR ProgressEvent.
-   * @private
-   #1#
-  showPhotos_: function (e) {
-    var kittens = e.target.responseXML.querySelectorAll('photo');
-    for (var i = 0; i < kittens.length; i++) {
-      var img = document.createElement('img');
-      img.src = this.constructKittenURL_(kittens[i]);
-      img.setAttribute('alt', kittens[i].getAttribute('title'));
-      document.body.appendChild(img);
-    }
-  },
+        // tab.url is only available if the "activeTab" permission is declared.
+        // If you want to see the URL of other tabs (e.g. after removing active:true
+        // from |queryInfo|), then the "tabs" permission is required to see their
+        // "url" properties.
+        console.assert(typeof url == 'string', 'tab.url should be a string');
 
-  /**
-   * Given a photo, construct a URL using the method outlined at
-   * http://www.flickr.com/services/api/misc.urlKittenl
-   *
-   * @param {DOMElement} A kitten.
-   * @return {string} The kitten's URL.
-   * @private
-   #1#
-  constructKittenURL_: function (photo) {
-    return "http://farm" + photo.getAttribute("farm") +
-        ".static.flickr.com/" + photo.getAttribute("server") +
-        "/" + photo.getAttribute("id") +
-        "_" + photo.getAttribute("secret") +
-        "_s.jpg";
-  }
-};
+        callback(url);
+    });
 
-// Run our kitten generation script as soon as the document's DOM is ready.
-document.addEventListener('DOMContentLoaded', function () {
-  kittenGenerator.requestKittens();
-});
-*/
-
-/*initializeCheck = function () {
-    alert("-----");
-    var scripts = document.getElementsByTagName("script");
-    for (var i = 0; i < scripts.length; i++) {
-        if (scripts[i].src) {
-            console.log(i, scripts[i].src);
-            loadDoc(i, scripts[i].src, "");
-        }
-        else {
-            console.log(i, scripts[i]);
-            loadDoc(i, "", scripts[i].innerHTML);
-        }
-    }
-    getScriptContent();
-    //alert(scripts.length);
+    // Most methods of the Chrome extension APIs are asynchronous. This means that
+    // you CANNOT do something like this:
+    //
+    // var url;
+    // chrome.tabs.query(queryInfo, (tabs) => {
+    //   url = tabs[0].url;
+    // });
+    // alert(url); // Shows "undefined", because chrome.tabs.query is async.
 }
 
-function loadDoc(scriptNumber, src, content) {
-    alert("Load function");
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function () {
-        if (this.readyState === 4 && this.status === 200) {
-        }
-    };
-    xhttp.open("POST", "http://localhost:55168/home/PostScript", true);
-    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    xhttp.send("Number=" + scriptNumber + "&Source=" + src + "&Content=" + content);
+/**
+ * Change the background color of the current page.
+ *
+ * @param {string} color The new background color.
+ */
+function changeBackgroundColor(color) {
+    var script = 'document.body.style.backgroundColor="' + color + '";';
+    // See https://developer.chrome.com/extensions/tabs#method-executeScript.
+    // chrome.tabs.executeScript allows us to programmatically inject JavaScript
+    // into a page. Since we omit the optional first argument "tabId", the script
+    // is inserted into the active tab of the current window, which serves as the
+    // default.
+    chrome.tabs.executeScript({
+        code: script
+    });
 }
 
+/**
+ * Gets the saved background color for url.
+ *
+ * @param {string} url URL whose background color is to be retrieved.
+ * @param {function(string)} callback called with the saved background color for
+ *     the given url on success, or a falsy value if no color is retrieved.
+ */
+function getSavedBackgroundColor(url, callback) {
+    // See https://developer.chrome.com/apps/storage#type-StorageArea. We check
+    // for chrome.runtime.lastError to ensure correctness even when the API call
+    // fails.
+    chrome.storage.sync.get(url, (items) => {
+        callback(chrome.runtime.lastError ? null : items[url]);
+    });
+}
 
-function getScriptContent() {
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function () {
-        if (this.readyState === 4 && this.status === 200) {
-        }
-    };
-    xhttp.open("GET", "http://localhost:55168/home/GetScriptContent", true);
-    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    xhttp.send();
-}*/
+/**
+ * Sets the given background color for url.
+ *
+ * @param {string} url URL for which background color is to be saved.
+ * @param {string} color The background color to be saved.
+ */
+function saveBackgroundColor(url, color) {
+    var items = {};
+    items[url] = color;
+    // See https://developer.chrome.com/apps/storage#type-StorageArea. We omit the
+    // optional callback since we don't need to perform any action once the
+    // background color is saved.
+    chrome.storage.sync.set(items);
+}
 
+// This extension loads the saved background color for the current tab if one
+// exists. The user can select a new background color from the dropdown for the
+// current page, and it will be saved as part of the extension's isolated
+// storage. The chrome.storage API is used for this purpose. This is different
+// from the window.localStorage API, which is synchronous and stores data bound
+// to a document's origin. Also, using chrome.storage.sync instead of
+// chrome.storage.local allows the extension data to be synced across multiple
+// user devices.
+document.addEventListener('DOMContentLoaded', () => {
 
-document.addEventListener('DOMContentLoaded', function () {
     var checkPageButton = document.getElementById('checkPage');
-    checkPageButton.addEventListener('click', function () {
-        //initializeCheck();
-    }, false);
-}, false);
+
+
+    getCurrentTabUrl((url) => {
+        var checkPageButton = document.getElementById('checkPage');
+        //var dropdown = document.getElementById('dropdown');
+
+        // Load the saved background color for this page and modify the dropdown
+        // value, if needed.
+        //getSavedBackgroundColor(url, (savedColor) => {
+        //    if (savedColor) {
+        //        changeBackgroundColor(savedColor);
+        //        dropdown.value = savedColor;
+        //    }
+        //});
+
+        // Ensure the background color is changed and saved when the dropdown
+        // selection changes.
+        //dropdown.addEventListener('change', () => {
+        //    changeBackgroundColor(dropdown.value);
+        //    saveBackgroundColor(url, dropdown.value);
+        //});
+
+        checkPageButton.addEventListener('click', function () {
+            setDomElementToStartWork()
+        }, false);
+    });
+});
+
+function setDomElementToStartWork() {
+    alert("mama");
+    var script = `var addDiv = (function () {
+        var newDiv = document.createElement("div");
+        newDiv.setAttribute("id", "testDiv");
+        //var newContent = document.createTextNode("Hi there and greetings!");
+        //newDiv.appendChild(newContent);
+        document.body.appendChild(newDiv);
+    })();`;
+
+    //var script = 'document.body.style.backgroundColor="' + color + '";';
+    // See https://developer.chrome.com/extensions/tabs#method-executeScript.
+    // chrome.tabs.executeScript allows us to programmatically inject JavaScript
+    // into a page. Since we omit the optional first argument "tabId", the script
+    // is inserted into the active tab of the current window, which serves as the
+    // default.
+    chrome.tabs.executeScript({
+        code: script
+    });
+
+    chrome.tabs.executeScript(null,
+    {
+        file: "background.js"
+    });
+
+}
+

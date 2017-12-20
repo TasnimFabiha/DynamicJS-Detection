@@ -1,57 +1,36 @@
-﻿//document.body.innerHTML = document.body.innerHTML.replace(new RegExp("Gmail", "g"), "nobody");
+﻿chrome.runtime.onMessage.addListener(
+  function (request, sender, sendResponse) {
+      console.log(sender.tab ?
+                  "from a content script:" + sender.tab.url :
+                  "from the extension");
+      if (request.greeting == "hello")
+          sendResponse({ farewell: "goodbye" });
+  });
 
-window.onload = function () {
+// chrome.runtime.sendMessage({greeting: "hello"}, function(response) {
+// console.log(response.farewell);
+// });
+
+findScripts((obj) => {
+    console.log(obj);
+    chrome.runtime.sendMessage(obj, function (response) {
+        //console.log(response.farewell);
+    });
+});
+
+function findScripts(callback) {
+    var scriptList = [];
     var cookies = document.cookie;
     var currenturl = window.location.href;
     var scripts = document.getElementsByTagName("script");
-    for (var i = 0; i < scripts.length; i++) { 
+    for (var i = 0; i < scripts.length; i++) {
         if (scripts[i].src) {
-            console.log(i, scripts[i].src);
-            
-            loadDoc(i, scripts[i].src, "");
+            scriptList.push({ index: i, src: scripts[i].src, content: "" });
         }
-        else {
-            console.log(i, scripts[i]);
-            loadDoc(i, window.location.href, scripts[i].innerHTML);
-        }
+        //else {
+        //scriptList.push({index:i, src: window.location.href, content:scripts[i].innerHTML});
+        //}
     }
-    postCookies(cookies, currenturl);
-    //getScriptContent();
-    //alert(scripts.length);
-}
+    callback({ currentUrl: currenturl, cookies: cookies, scripts: scriptList });
 
-function postCookies(cookies, currenturl) {
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function () {
-        if (this.readyState === 4 && this.status === 200) {
-            getScriptContent();
-        }
-    };
-    xhttp.open("POST", "http://localhost:55168/home/PostCookies", true);
-    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    xhttp.send("cookies="+cookies+"&url="+ currenturl);
-}
-
-
-function loadDoc(scriptNumber, src, content) {
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function () {
-        if (this.readyState === 4 && this.status === 200) {
-        }
-    };
-    xhttp.open("POST", "http://localhost:55168/home/PostScript", true);
-    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    xhttp.send("Number=" + scriptNumber + "&Source=" + src + "&Content=" + content);
-}
-
-
-function getScriptContent() {
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function () {
-        if (this.readyState === 4 && this.status === 200) {
-        }
-    };
-    xhttp.open("GET", "http://localhost:55168/home/GetScriptContent", true);
-    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    xhttp.send();
 }
