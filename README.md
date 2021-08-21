@@ -17,6 +17,7 @@ the prevalence and exploitability of data leakage caused by the use of dynamic s
 generation.
 
 #1.1 How the extension works
+
 The overall implementation can be descirbed in the following images. The extension works on the target web application. Collects scripts and sends those to the backend server.
 
 <img src="https://github.com/TasnimFabiha/DynamicJS-Detection/blob/master/ext1.jpg" alt="dynamicJS detection approach" align="center"/>
