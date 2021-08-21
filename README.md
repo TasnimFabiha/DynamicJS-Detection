@@ -2,7 +2,8 @@
 This repository is the implementation of the basic foundation of an empirical study, 
 proposed by [Sebastian et al 2015](https://www.usenix.org/node/190993).
 
-#1.The Empirical Study
+#1.The Empirical Study:
+
 An approach to detect the presence of dynamic JavaScript on any web applications
 and finding the exploitation technique is presented in this implementation. Use of dynamic scripts on any 
 web applications can lead to
@@ -10,8 +11,7 @@ extreme occurrences of information leakage. Cross-Site Script Inclusion (XSSI), 
 such kind of security attack, that can be easily done by utilizing the advantage of
 using state-dependent dynamic JavaScript on web applications.  An approach
 for Bangladeshi dataset is presented here for providing acuity of the occurrences of
-dynamic scripts and, determining how these occurrences can lead to severe conse
-quences of information leakage. Keeping the above factors in mind, a methodology
+dynamic scripts and, determining how these occurrences can lead to severe consequences of information leakage. Keeping the above factors in mind, a methodology
 is proposed to experiment an empirical study. This is designed to gain insights into
 the prevalence and exploitability of data leakage caused by the use of dynamic script
 generation.
